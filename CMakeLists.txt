@@ -1,0 +1,39 @@
+﻿cmake_minimum_required(VERSION 3.0...3.31)
+
+project(PlonqCraft)
+include(FetchContent)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(OpenGL REQUIRED)
+
+FetchContent_Declare(
+        glfw3
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 7b6aead9fb88b3623e3b3725ebb42670cbe4c579
+)
+FetchContent_MakeAvailable(glfw3)
+
+FetchContent_Declare(
+        glad
+        GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+        GIT_TAG 1ecd45775d96f35170458e6b148eb0708967e402
+        GIT_PROGRESS TRUE
+)
+set(GLAD_PROFILE "core" CACHE STRING "OpenGL Profile" FORCE)
+set(GLAD_API "gl=4.6" CACHE STRING "OpenGL API Version" FORCE)
+FetchContent_MakeAvailable(glad)
+
+
+
+add_executable(${PROJECT_NAME} src/main.cpp
+        src/Graphics/Window.cpp
+        src/Graphics/Window.hpp
+        src/Graphics/Shader.cpp
+        src/Graphics/Shader.hpp
+)
+
+target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL glad)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${glad_SOURCE_DIR}/include)
