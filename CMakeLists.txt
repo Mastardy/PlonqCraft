@@ -25,7 +25,12 @@ set(GLAD_PROFILE "core" CACHE STRING "OpenGL Profile" FORCE)
 set(GLAD_API "gl=4.6" CACHE STRING "OpenGL API Version" FORCE)
 FetchContent_MakeAvailable(glad)
 
-
+FetchContent_Declare(
+        glm
+        GIT_REPOSITORY https://github.com/g-truc/glm.git
+        GIT_TAG 0af55ccecd98d4e5a8d1fad7de25ba429d60e863
+)
+FetchContent_MakeAvailable(glm)
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/Graphics/Window.cpp
@@ -34,6 +39,6 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/Graphics/Shader.hpp
 )
 
-target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL glad)
+target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL glad glm)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${glad_SOURCE_DIR}/include)
