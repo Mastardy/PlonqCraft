@@ -35,9 +35,8 @@ FetchContent_MakeAvailable(glm)
 add_executable(${PROJECT_NAME} src/main.cpp
         src/Graphics/Window.cpp
         src/Graphics/Window.hpp
-        src/Graphics/Shader.cpp
-        src/Graphics/Shader.hpp
-)
+        src/Graphics/Primitives/Triangle.cpp
+        src/Graphics/Primitives/Triangle.hpp)
 
 target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL glad glm)
 

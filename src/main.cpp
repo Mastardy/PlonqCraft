@@ -1,10 +1,13 @@
 ﻿#include "Graphics/Window.hpp"
+#include "Graphics/Primitives/Triangle.hpp"
 
 void ProcessInput(const Window& window);
 
 int main()
 {
 	const Window window;
+
+	const Triangle triangle;
 
 	while (!window.ShouldClose())
 	{
