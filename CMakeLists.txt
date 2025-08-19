@@ -36,8 +36,10 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/Graphics/Window.cpp
         src/Graphics/Window.hpp
         src/Graphics/Primitives/Triangle.cpp
-        src/Graphics/Primitives/Triangle.hpp)
+        src/Graphics/Primitives/Triangle.hpp
+        src/Graphics/Material.cpp
+        src/Graphics/Material.hpp)
 
 target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL glad glm)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${glad_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${glad_SOURCE_DIR}/include PRIVATE ${PROJECT_SOURCE_DIR}/src)

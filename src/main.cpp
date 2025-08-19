@@ -5,9 +5,17 @@ void ProcessInput(const Window& window);
 
 int main()
 {
-	const Window window;
+	Window window;
 
-	const Triangle triangle;
+	Material mat;
+	const Triangle triangle(
+	{
+		glm::vec3(0.0, 0.5, 0.0),
+		glm::vec3(-0.5, -0.5, 0.0),
+		glm::vec3(0.5, -0.5, 0.0)
+	}, mat);
+
+	window.AddTriangle(triangle);
 
 	while (!window.ShouldClose())
 	{
@@ -22,6 +30,6 @@ void ProcessInput(const Window& window)
 {
 	if (window.GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
-		window.ShouldClose(true);
+		window.Close();
 	}
 }

@@ -1,16 +1,27 @@
 ﻿#pragma once
+#include <array>
 #include <initializer_list>
 #include <glm/vec3.hpp>
 
+#include "Graphics/Material.hpp"
+
 class Triangle
 {
-private:
+public:
 	static constexpr int VERTEX_SIZE = 3;
-	static constexpr int VERTEX_COUNT = VERTEX_SIZE * 3;
+	static constexpr int VERTEX_COUNT = 3;
+	static constexpr int VERTEX_ARRAY_SIZE = VERTEX_SIZE * VERTEX_COUNT;
 
 public:
-	Triangle(std::initializer_list<glm::vec3> positions);
+	Triangle(const std::initializer_list<glm::vec3>& positions, Material& mat);
+	~Triangle();
+
+	void Draw() const;
+
+	std::array<glm::vec3, VERTEX_COUNT> GetVertices() const;
 
 private:
-	float vertices[VERTEX_COUNT];
+	unsigned int VBO, VAO;
+	float vertices[VERTEX_ARRAY_SIZE]{};
+	Material& material;
 };
