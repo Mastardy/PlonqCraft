@@ -27,6 +27,7 @@ Window::Window(const int width, const int height)
 
 	glViewport(0, 0, width, height);
 
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 }
 
@@ -59,7 +60,7 @@ void Window::Render() const
 	glfwPollEvents();
 }
 
-void Window::AddTriangle(const Triangle& triangle)
+void Window::AddTriangle(const Shape& triangle)
 {
 	triangles.push_back(triangle);
 }

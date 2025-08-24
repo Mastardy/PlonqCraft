@@ -35,8 +35,8 @@ FetchContent_MakeAvailable(glm)
 add_executable(${PROJECT_NAME} src/main.cpp
         src/Graphics/Window.cpp
         src/Graphics/Window.hpp
-        src/Graphics/Primitives/Triangle.cpp
-        src/Graphics/Primitives/Triangle.hpp
+        src/Graphics/Primitives/Shape.cpp
+        src/Graphics/Primitives/Shape.hpp
         src/Graphics/Material.cpp
         src/Graphics/Material.hpp)
 

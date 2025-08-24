@@ -1,5 +1,5 @@
 ﻿#include "Graphics/Window.hpp"
-#include "Graphics/Primitives/Triangle.hpp"
+#include "Graphics/Primitives/Shape.hpp"
 
 void ProcessInput(const Window& window);
 
@@ -8,12 +8,13 @@ int main()
 	Window window;
 
 	Material mat;
-	const Triangle triangle(
+	const Shape triangle(
 	{
-		glm::vec3(0.0, 0.5, 0.0),
-		glm::vec3(-0.5, -0.5, 0.0),
-		glm::vec3(0.5, -0.5, 0.0)
-	}, mat);
+		glm::vec3(-0.5f, -0.5f, 0.0f),
+		glm::vec3(-0.5f, 0.5f, 0.0f),
+		glm::vec3(0.5f, -0.5f, 0.0f),
+		glm::vec3(0.5f, 0.5f, 0.0f)
+	}, {0, 1, 2, 1, 3, 2}, mat);
 
 	window.AddTriangle(triangle);
 

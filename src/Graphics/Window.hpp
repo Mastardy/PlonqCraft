@@ -3,7 +3,7 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 
-#include "Primitives/Triangle.hpp"
+#include "Primitives/Shape.hpp"
 
 class Window
 {
@@ -20,12 +20,12 @@ public:
 
 	int GetKey(int key) const;
 
-	void AddTriangle(const Triangle& triangle);
+	void AddTriangle(const Shape& triangle);
 
 private:
 	static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 private:
 	GLFWwindow* window;
-	std::vector<Triangle> triangles;
+	std::vector<Shape> triangles;
 };
