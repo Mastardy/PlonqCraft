@@ -27,6 +27,7 @@ Window::Window(const int width, const int height)
 
 	glViewport(0, 0, width, height);
 
+	glEnable(GL_DEPTH_TEST);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 }
@@ -49,20 +50,20 @@ void Window::Close() const
 void Window::Render() const
 {
 	glClearColor(0.1f, 0.1f, 0.125f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for (auto& t: triangles)
+	for (auto& t: shapes)
 	{
-		t.Draw();
+		t->Draw();
 	}
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
 }
 
-void Window::AddTriangle(const Shape& triangle)
+void Window::AddShape(std::unique_ptr<Shape> shape)
 {
-	triangles.push_back(triangle);
+	shapes.emplace_back(std::move(shape));
 }
 
 

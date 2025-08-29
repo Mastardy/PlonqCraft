@@ -1,43 +1,18 @@
 ﻿#include "Material.hpp"
 
-#include <glad/glad.h>
+Material::Material(const std::shared_ptr<Shader>& shader): shader(shader) {}
 
-Material::Material()
+void Material::Use() const
 {
-	const auto vertexShaderSource = "#version 460 core\n"
-			"layout (location = 0) in vec3 aPos;\n"
-			"void main()\n"
-			"{"
-			"gl_Position = vec4(aPos, 1.0);\n"
-			"}\0";
-
-	const unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-	glCompileShader(vertexShader);
-
-	const auto fragmentShaderSource = "#version 460 core\n"
-			"out vec4 FragColor;\n"
-			"void main()\n"
-			"{"
-			"FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);"
-			"}";
-
-	const unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-	glCompileShader(fragmentShader);
-
-	program = glCreateProgram();
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, fragmentShader);
-	glLinkProgram(program);
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	shader->Use();
 }
 
-Material::~Material()
+unsigned int Material::GetProgram() const
 {
-	glDeleteProgram(program);
+	return shader->ID();
+}
+
+std::weak_ptr<Shader> Material::GetShader() const
+{
+	return shader;
 }

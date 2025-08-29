@@ -13,19 +13,18 @@ public:
 	~Window();
 
 	bool ShouldClose() const;
-
 	void Close() const;
 
 	void Render() const;
 
-	int GetKey(int key) const;
+	void AddShape(std::unique_ptr<Shape> shape);
 
-	void AddTriangle(const Shape& triangle);
+	int GetKey(int key) const;
 
 private:
 	static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 private:
 	GLFWwindow* window;
-	std::vector<Shape> triangles;
+	std::vector<std::unique_ptr<Shape> > shapes;
 };

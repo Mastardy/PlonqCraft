@@ -32,13 +32,22 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glm)
 
+add_custom_target(COPY_RESOURCES ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/res ${CMAKE_CURRENT_BINARY_DIR}/res
+        COMMENT "Copying res folder to build directory"
+)
+
 add_executable(${PROJECT_NAME} src/main.cpp
         src/Graphics/Window.cpp
         src/Graphics/Window.hpp
         src/Graphics/Primitives/Shape.cpp
         src/Graphics/Primitives/Shape.hpp
         src/Graphics/Material.cpp
-        src/Graphics/Material.hpp)
+        src/Graphics/Material.hpp
+        src/Graphics/Shader.cpp
+        src/Graphics/Shader.hpp)
+
+add_dependencies(${PROJECT_NAME} COPY_RESOURCES)
 
 target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL glad glm)
 

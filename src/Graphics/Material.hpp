@@ -1,11 +1,18 @@
 ﻿#pragma once
+#include <memory>
+
+#include "Shader.hpp"
 
 class Material
 {
 public:
-	Material();
-	~Material();
+	explicit Material(const std::shared_ptr<Shader>& shader);
 
-public:
-	unsigned int program;
+	void Use() const;
+
+	unsigned int GetProgram() const;
+	std::weak_ptr<Shader> GetShader() const;
+
+private:
+	std::shared_ptr<Shader> shader;
 };
