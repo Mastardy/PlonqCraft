@@ -1,15 +1,11 @@
 #version 460 core
-
 layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoords;
 
-out vec3 pos;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+out vec2 TexCoords;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
-    pos = vec3((aPos.x + 1) / 2, (aPos.y + 1) / 2, (aPos.z + 1) / 2);
+    TexCoords = aTexCoords;
+    gl_Position = vec4(aPos, 1.0);
 }

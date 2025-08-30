@@ -11,6 +11,9 @@ Window::Window(const int width, const int height)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	this->width = width;
+	this->height = height;
+
 	window = glfwCreateWindow(width, height, "Hello Worlders!", nullptr, nullptr);
 	if (window == nullptr)
 	{
@@ -28,8 +31,9 @@ Window::Window(const int width, const int height)
 	glViewport(0, 0, width, height);
 
 	glEnable(GL_DEPTH_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+	glfwSwapInterval(0);
 }
 
 Window::~Window()

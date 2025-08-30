@@ -6,20 +6,24 @@
 
 #include "Graphics/Material.hpp"
 
+struct VertexData
+{
+	glm::vec3 position;
+	glm::vec2 uv;
+};
+
 class Shape
 {
 public:
-	Shape(const std::initializer_list<glm::vec3>& _vertices, const std::initializer_list<int>& _indices,
-	      const glm::vec3& _position, std::shared_ptr<Material> mat);
+	Shape(const std::initializer_list<VertexData>& _vertices, std::shared_ptr<Material> mat);
 
 	Shape(const Shape&) = delete;
 	Shape& operator=(const Shape&) = delete;
 
-	Shape(Shape&& other) noexcept : VBO(other.VBO), VAO(other.VAO), EBO(other.EBO),
-	                                vertices(std::move(other.vertices)), indices(std::move(other.indices)),
-	                                material(std::move(other.material)), position(other.position)
+	Shape(Shape&& other) noexcept : VBO(other.VBO), VAO(other.VAO), vertices(std::move(other.vertices)),
+	                                material(std::move(other.material))
 	{
-		other.VAO = other.VBO = other.EBO = 0;
+		other.VAO = other.VBO = 0;
 	}
 
 	Shape& operator=(Shape&& other) noexcept
@@ -27,15 +31,12 @@ public:
 		if (this == &other) return *this;
 
 		vertices = std::move(other.vertices);
-		indices = std::move(other.indices);
-		position = other.position;
 		material = other.material;
 
 		VAO = other.VAO;
 		VBO = other.VBO;
-		EBO = other.EBO;
 
-		other.VAO = other.VBO = other.EBO = 0;
+		other.VAO = other.VBO = 0;
 
 		return *this;
 	}
@@ -45,9 +46,7 @@ public:
 	void Draw() const;
 
 private:
-	unsigned int VBO{}, VAO{}, EBO{};
+	unsigned int VBO{}, VAO{};
 	std::vector<float> vertices{};
-	std::vector<unsigned int> indices{};
 	std::shared_ptr<Material> material;
-	glm::vec3 position;
 };

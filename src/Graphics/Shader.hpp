@@ -13,10 +13,12 @@ private:
 	{
 		Vertex,
 		Fragment,
+		Compute,
 		Program
 	};
 
 public:
+	Shader(const std::string& computePath);
 	Shader(const std::string& vertexPath, const std::string& fragmentPath);
 	~Shader();
 

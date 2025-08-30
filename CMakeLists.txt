@@ -45,7 +45,10 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/Graphics/Material.cpp
         src/Graphics/Material.hpp
         src/Graphics/Shader.cpp
-        src/Graphics/Shader.hpp)
+        src/Graphics/Shader.hpp
+        src/Graphics/Texture.cpp
+        src/Graphics/Texture.hpp
+)
 
 add_dependencies(${PROJECT_NAME} COPY_RESOURCES)
 

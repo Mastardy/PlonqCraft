@@ -19,12 +19,16 @@ public:
 
 	void AddShape(std::unique_ptr<Shape> shape);
 
+	int GetWidth() const { return width; }
+	int GetHeight() const { return height; }
+
 	int GetKey(int key) const;
 
 private:
 	static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 private:
+	int width, height;
 	GLFWwindow* window;
 	std::vector<std::unique_ptr<Shape> > shapes;
 };

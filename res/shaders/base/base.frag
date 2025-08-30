@@ -2,9 +2,12 @@
 
 out vec4 FragColor;
 
-in vec3 pos;
+in vec2 TexCoords;
+
+uniform sampler2D tex;
 
 void main()
 {
-    FragColor = vec4(pos, 1.0f);
+    vec3 texCol = texture(tex, TexCoords).rgb;
+    FragColor = vec4(texCol, 1.0f);
 }

@@ -1,6 +1,7 @@
 #include "Shader.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <print>
 #include <sstream>
 
@@ -9,6 +10,20 @@
 #include <glm/mat4x4.hpp>
 
 #include "glad/glad.h"
+
+Shader::Shader(const std::string& computePath)
+{
+	const auto computeCode = ReadCodeFromFile(computePath);
+	const auto compute = CreateShader(computeCode, ShaderType::Compute);
+	CheckErrors(compute, ShaderType::Compute);
+
+	id = glCreateProgram();
+	glAttachShader(id, compute);
+	glLinkProgram(id);
+	CheckErrors(id, ShaderType::Program);
+
+	glDeleteShader(compute);
+}
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 {
@@ -136,7 +151,11 @@ std::string Shader::ReadCodeFromFile(const std::string& filePath)
 
 unsigned int Shader::CreateShader(const std::string& shaderCode, const ShaderType type)
 {
-	const auto shader = glCreateShader(type == ShaderType::Vertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+	const auto shader = glCreateShader(type == ShaderType::Vertex
+		                                   ? GL_VERTEX_SHADER
+		                                   : type == ShaderType::Fragment
+			                                     ? GL_FRAGMENT_SHADER
+			                                     : GL_COMPUTE_SHADER);
 	const auto code = shaderCode.c_str();
 
 	glShaderSource(shader, 1, &code, nullptr);
@@ -149,21 +168,24 @@ unsigned int Shader::CreateShader(const std::string& shaderCode, const ShaderTyp
 void Shader::CheckErrors(const unsigned int id, const ShaderType type)
 {
 	int success;
-	char infoLog[512];
+	char infoLog[1024];
 	if (type != ShaderType::Program)
 	{
-		glGetProgramiv(id, GL_COMPILE_STATUS, &success);
+		glGetShaderiv(id, GL_COMPILE_STATUS, &success);
 		if (success) return;
 
-		glGetShaderInfoLog(id, 512, nullptr, infoLog);
+		glGetShaderInfoLog(id, 1024, nullptr, infoLog);
 		std::println("ERROR::SHADER_COMPILATION_ERROR of type {}\n{}",
-		             type == ShaderType::Vertex ? "Vertex" : "Fragment", infoLog);;
+		             type == ShaderType::Vertex ? "Vertex" : type == ShaderType::Fragment ? "Fragment" : "Compute",
+		             infoLog);;
 		return;
 	}
 
 	glGetProgramiv(id, GL_LINK_STATUS, &success);
 	if (success) return;
 
-	glGetShaderInfoLog(id, 512, nullptr, infoLog);
-	std::println("ERROR::SHADER_LINKING_ERROR of type {}\n{}", "Program", infoLog);
+	glGetProgramInfoLog(id, 1024, nullptr, infoLog);
+	std::println("ERROR::SHADER_LINKING_ERROR of type {}\n", "Program");
+
+	std::cout << infoLog;
 }
