@@ -34,6 +34,10 @@ void Texture::SetSize(const int width, const int height)
 	this->height = height;
 }
 
+void Texture::Clear() const
+{
+	glClearTexImage(texture, 0, GL_RGBA, GL_FLOAT, nullptr);
+}
 
 Texture::~Texture()
 {

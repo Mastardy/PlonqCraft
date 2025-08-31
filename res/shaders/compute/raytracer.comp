@@ -1,0 +1,99 @@
+#version 460 core
+
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout (rgba32f, binding = 0) uniform image2D imgOutput;
+
+uniform vec3 camCenter;
+uniform float camFocalLength;
+uniform int texWidth;
+uniform int texHeight;
+
+struct Sphere {
+    vec3 center;
+    float radius;
+};
+
+layout (std430, binding = 0) buffer Spheres {
+    Sphere spheres[];
+};
+
+struct Ray
+{
+    vec3 origin;
+    vec3 dir;
+};
+
+vec3 RayAt(Ray r, float t)
+{
+    return r.origin + t * r.dir;
+}
+
+float HitSphere(Sphere sphere, Ray ray)
+{
+    vec3 oc = sphere.center - ray.origin;
+    float a = dot(ray.dir, ray.dir);
+    float h = dot(ray.dir, oc);
+    float c = dot(oc, oc) - sphere.radius * sphere.radius;
+    float discriminant = h * h - a * c;
+
+    return discriminant < 0 ? -1.0f : (h - sqrt(discriminant)) / (a);
+}
+
+float rand(vec2 co)
+{
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+vec3 RayColor(Ray ray)
+{
+    float closestT = 1e20;
+    int hitIndex = -1;
+
+    for (int i = 0; i < spheres.length(); i++)
+    {
+        float t = HitSphere(spheres[i], ray);
+        if (t > 0.001 && t < closestT)
+        {
+            closestT = t;
+            hitIndex = i;
+        }
+    }
+
+    // Sphere
+    vec3 N = normalize(RayAt(ray, max(closestT, 0.0)) - spheres[max(hitIndex, 0)].center);
+
+    // Sky
+    vec3 unitDir = normalize(ray.dir);
+    float a = 0.5f * (unitDir.y + 1.0f);
+
+    return hitIndex != -1
+    ? 0.5f * vec3(N.x + 1.0f, N.y + 1.0f, N.z + 1.0f)
+    : (1.0f - a) * vec3(1.0f, 1.0f, 1.0f) + a * vec3(0.5f, 0.7f, 1.0f);
+}
+
+void main()
+{
+    int halfTexWidth = texWidth / 2;
+    int halfTexHeight = texHeight / 2;
+
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+
+    int samples = 16;
+
+    vec4 value = vec4(0, 0, 0, 0);
+    for (int i = 0; i < samples; i++)
+    {
+        vec3 pixelCenter = vec3(
+        ((texelCoord.x + rand(gl_GlobalInvocationID.xy * i)) - halfTexWidth) / float(halfTexWidth),
+        ((texelCoord.y + rand(gl_GlobalInvocationID.xy * i)) - halfTexHeight) / float(halfTexHeight),
+        -camFocalLength
+        );
+        vec3 rayDir = normalize(pixelCenter);
+
+        Ray r = Ray(camCenter, rayDir);
+        value += vec4(RayColor(r), 1.0);
+    }
+
+    float samplesScale = 1.0f / samples;
+    imageStore(imgOutput, texelCoord, value * (1 * samplesScale));
+}

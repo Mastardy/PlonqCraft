@@ -76,6 +76,11 @@ int Window::GetKey(const int key) const
 	return glfwGetKey(window, key);
 }
 
+void Window::SetTitle(const std::string& title) const
+{
+	glfwSetWindowTitle(window, title.c_str());
+}
+
 
 void Window::FramebufferSizeCallback(GLFWwindow*, const int width, const int height)
 {

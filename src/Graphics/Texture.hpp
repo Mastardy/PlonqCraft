@@ -8,6 +8,7 @@ public:
 
 	void Bind() const;
 	void SetSize(int width, int height);
+	void Clear() const;
 
 private:
 	unsigned int texture{};

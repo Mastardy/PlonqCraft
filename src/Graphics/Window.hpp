@@ -24,6 +24,8 @@ public:
 
 	int GetKey(int key) const;
 
+	void SetTitle(const std::string& title) const;
+
 private:
 	static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
