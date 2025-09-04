@@ -1,9 +1,8 @@
 ﻿#pragma once
 
-#include <vector>
 #include <GLFW/glfw3.h>
 
-#include "Primitives/Shape.hpp"
+#include "Primitives/Frame.hpp"
 
 class Window
 {
@@ -17,20 +16,21 @@ public:
 
 	void Render() const;
 
-	void AddShape(std::unique_ptr<Shape> shape);
-
 	int GetWidth() const { return width; }
 	int GetHeight() const { return height; }
+	std::shared_ptr<Texture> GetTexture() const { return texture; }
 
 	int GetKey(int key) const;
+
+	GLFWwindow* GetGLFWWindow() const { return window; }
 
 	void SetTitle(const std::string& title) const;
 
 private:
 	static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-private:
 	int width, height;
 	GLFWwindow* window;
-	std::vector<std::unique_ptr<Shape> > shapes;
+	std::unique_ptr<Frame> frame;
+	std::shared_ptr<Texture> texture;
 };

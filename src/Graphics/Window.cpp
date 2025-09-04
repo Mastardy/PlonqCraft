@@ -34,6 +34,11 @@ Window::Window(const int width, const int height)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 	glfwSwapInterval(0);
+
+	texture = std::make_shared<Texture>(width, height);
+	auto shader = std::make_shared<Shader>("res/shaders/base/base.vert", "res/shaders/base/base.frag");
+	auto mat = std::make_shared<Material>(shader, texture);
+	frame = std::make_unique<Frame>(mat);
 }
 
 Window::~Window()
@@ -56,20 +61,11 @@ void Window::Render() const
 	glClearColor(0.1f, 0.1f, 0.125f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for (auto& t: shapes)
-	{
-		t->Draw();
-	}
+	frame->Draw();
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
 }
-
-void Window::AddShape(std::unique_ptr<Shape> shape)
-{
-	shapes.emplace_back(std::move(shape));
-}
-
 
 int Window::GetKey(const int key) const
 {

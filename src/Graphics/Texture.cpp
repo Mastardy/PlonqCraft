@@ -1,7 +1,5 @@
 #include "Texture.hpp"
 
-#include <print>
-
 #include "glad/glad.h"
 
 Texture::Texture(const int width, const int height)

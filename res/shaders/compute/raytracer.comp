@@ -1,16 +1,16 @@
 #version 460 core
 
-layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout (rgba32f, binding = 0) uniform image2D imgOutput;
 
 uniform vec3 camCenter;
+uniform vec3 camForward;
 uniform float camFocalLength;
 uniform int texWidth;
 uniform int texHeight;
 uniform int chunkWidth;
 uniform int chunkLength;
 uniform int chunkHeight;
-uniform int currentLevel;
 uniform float randSeed;
 
 struct Block {
@@ -26,43 +26,135 @@ struct Ray {
     vec3 direction;
 };
 
+bool IsValidVoxel(ivec3 p) {
+    return p.x >= 0 && p.x < chunkWidth &&
+    p.y >= 0 && p.y < chunkHeight &&
+    p.z >= 0 && p.z < chunkLength;
+}
+
+int GetBlock(ivec3 p)
+{
+    if (!IsValidVoxel(p)) return 0;
+    return chunk[p.x + p.z * chunkWidth + p.y * (chunkWidth * chunkLength)].id;
+}
+
+vec4 Raycast(Ray ray)
+{
+    ivec3 voxel = ivec3(floor(ray.origin));
+
+    if (!IsValidVoxel(voxel)) {
+        vec3 chunkMin = vec3(0.0);
+        vec3 chunkMax = vec3(chunkWidth, chunkHeight, chunkLength);
+
+        vec3 tMin = (chunkMin - ray.origin) / ray.direction;
+        vec3 tMax = (chunkMax - ray.origin) / ray.direction;
+
+        vec3 tMinActual = min(tMin, tMax);
+        vec3 tMaxActual = max(tMin, tMax);
+
+        float tEnter = max(max(tMinActual.x, tMinActual.y), tMinActual.z);
+        float tExit = min(min(tMaxActual.x, tMaxActual.y), tMaxActual.z);
+
+        if (tExit < 0.0 || tEnter > tExit) {
+            return vec4(0.6, 0.8, 1.0, 1.0);
+        }
+
+        float t = max(tEnter, 0.0) + 0.001;
+        vec3 entryPoint = ray.origin + ray.direction * t;
+        voxel = ivec3(floor(entryPoint));
+
+        if (!IsValidVoxel(voxel)) {
+            return vec4(0.6, 0.8, 1.0, 1.0);
+        }
+    }
+
+    ivec3 stepDir = ivec3(sign(ray.direction));
+
+    vec3 voxelMin = vec3(voxel);
+    vec3 voxelMax = voxelMin + vec3(1.0);
+
+    vec3 tMax;
+    for (int i = 0; i < 3; i++)
+    {
+        if (abs(ray.direction[i]) > 1e-6)
+        {
+            float boundary = (stepDir[i] > 0) ? voxelMax[i] : voxelMin[i];
+            tMax[i] = (boundary - ray.origin[i]) / ray.direction[i];
+        }
+        else
+        {
+            tMax[i] = 1e30;
+        }
+    }
+
+    vec3 tDelta;
+    for (int i = 0; i < 3; i++) {
+        if (abs(ray.direction[i]) > 1e-6) {
+            tDelta[i] = abs(1.0 / ray.direction[i]);
+        } else {
+            tDelta[i] = 1e30;
+        }
+    }
+
+    const int MAX_STEPS = 512;
+    for (int i = 0; i < MAX_STEPS; i++) {
+
+        int blockId = GetBlock(voxel);
+        if (blockId != 0)
+        {
+            return vec4(vec3(distance(voxel, ray.origin) / 24), 1);
+            return blockId == 1 ? vec4(0.5f, 0.5f, 0.5f, 1.0) : vec4(0.2f, 0.8f, 0.1f, 1.0);
+        }
+
+        if (tMax.x < tMax.y && tMax.x < tMax.z)
+        {
+            voxel.x += stepDir.x;
+            tMax.x += tDelta.x;
+        }
+        else if (tMax.y < tMax.z)
+        {
+            voxel.y += stepDir.y;
+            tMax.y += tDelta.y;
+        }
+        else
+        {
+            voxel.z += stepDir.z;
+            tMax.z += tDelta.z;
+        }
+    }
+
+    return vec4(0.6, 0.8, 1.0, 1.0);
+}
+
 void main()
 {
-/*
     int halfTexWidth = texWidth / 2;
     int halfTexHeight = texHeight / 2;
 
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
 
-    vec3 pixelCenter = vec3(
+    vec2 pixelCenter = vec2(
     (texelCoord.x - halfTexWidth) / float(halfTexWidth),
-    (texelCoord.y - halfTexHeight) / float(halfTexHeight),
-    -camFocalLength
+    (texelCoord.y - halfTexHeight) / float(halfTexHeight)
     );
-    vec3 rayDir = normalize(pixelCenter);
 
-    Ray r = Ray(camCenter, rayDir);*/
-
-    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-
-    int x = texelCoord.x % chunkWidth;
-    int z = texelCoord.y % chunkLength;
-    int y = (texelCoord.x / chunkWidth * (texHeight / chunkWidth)) + texelCoord.y / chunkLength;
-
-    vec4 value = vec4(0.5f, 0.5f, 0.5f, 1);
-
-    if (y > 255)
+    vec3 camUp = vec3(0, 1, 0);
+    vec3 camRight = normalize(-cross(camForward, camUp));
+    camUp = normalize(cross(camForward, camRight));
+    if (abs(camForward.y) == 1)
     {
-        value = vec4(0, 0, 0, 1);
+        camRight = -camRight;
+        camUp = -camUp;
     }
-    else
-    {
-        int blockType = chunk[x + z * chunkWidth + y * (chunkWidth * chunkLength)].id;
-        value = vec4(blockType == 1 ? vec3(0.3f, 0.3f, 0.3f) : blockType == 2 ? vec3(0.3f, 0.8f, 0.1f) : vec3(1), 1.0f);
-    }
-    if (texelCoord.x % chunkWidth == 0 || texelCoord.y % chunkLength == 0) value = vec4(1, 0, 0, 1);
 
-    if (y == currentLevel) value *= 0.5f;
+    vec3 rayDir = normalize(
+        camFocalLength * camForward +
+        pixelCenter.x * camRight +
+        pixelCenter.y * camUp
+    );
+
+    Ray r = Ray(camCenter, rayDir);
+    vec4 value = Raycast(r);
 
     imageStore(imgOutput, texelCoord, value);
 }

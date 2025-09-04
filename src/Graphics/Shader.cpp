@@ -177,7 +177,7 @@ void Shader::CheckErrors(const unsigned int id, const ShaderType type)
 		glGetShaderInfoLog(id, 1024, nullptr, infoLog);
 		std::println("ERROR::SHADER_COMPILATION_ERROR of type {}\n{}",
 		             type == ShaderType::Vertex ? "Vertex" : type == ShaderType::Fragment ? "Fragment" : "Compute",
-		             infoLog);;
+		             infoLog);
 		return;
 	}
 

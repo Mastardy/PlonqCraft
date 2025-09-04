@@ -40,14 +40,27 @@ add_custom_target(COPY_RESOURCES ALL
 add_executable(${PROJECT_NAME} src/main.cpp
         src/Graphics/Window.cpp
         src/Graphics/Window.hpp
-        src/Graphics/Primitives/Shape.cpp
-        src/Graphics/Primitives/Shape.hpp
+        src/Graphics/Primitives/Frame.cpp
+        src/Graphics/Primitives/Frame.hpp
         src/Graphics/Material.cpp
         src/Graphics/Material.hpp
         src/Graphics/Shader.cpp
         src/Graphics/Shader.hpp
         src/Graphics/Texture.cpp
         src/Graphics/Texture.hpp
+        src/Graphics/TimeQuery.hpp
+        src/Input/Input.cpp
+        src/Input/Input.hpp
+        src/Graphics/Ssbo.hpp
+        src/Graphics/ObjectBinder.hpp
+        src/Camera/Camera.cpp
+        src/Camera/Camera.hpp
+        src/Voxel/Block.cpp
+        src/Voxel/Block.hpp
+        src/Voxel/Chunk.cpp
+        src/Voxel/Chunk.hpp
+        src/Random/Random.cpp
+        src/Random/Random.hpp
 )
 
 add_dependencies(${PROJECT_NAME} COPY_RESOURCES)

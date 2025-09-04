@@ -2,13 +2,9 @@
 #include <string>
 
 #include "glm/fwd.hpp"
-#include "glm/vec2.hpp"
-#include "glm/vec3.hpp"
-#include "glm/vec4.hpp"
 
 class Shader
 {
-private:
 	enum class ShaderType
 	{
 		Vertex,
@@ -18,7 +14,7 @@ private:
 	};
 
 public:
-	Shader(const std::string& computePath);
+	explicit Shader(const std::string& computePath);
 	Shader(const std::string& vertexPath, const std::string& fragmentPath);
 	~Shader();
 
@@ -50,6 +46,5 @@ private:
 	static std::string ReadCodeFromFile(const std::string& filePath);
 	static unsigned int CreateShader(const std::string& shaderCode, ShaderType type);
 
-private:
 	unsigned int id;
 };

@@ -1,4 +1,4 @@
-﻿#include "Shape.hpp"
+﻿#include "Frame.hpp"
 
 #include <print>
 #include <glad/glad.h>
@@ -8,11 +8,15 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <utility>
 
-#include "GLFW/glfw3.h"
-
-Shape::Shape(const std::initializer_list<VertexData>& _vertices,
-             std::shared_ptr<Material> mat): material(std::move(mat))
+Frame::Frame(std::shared_ptr<Material> mat): material(std::move(mat))
 {
+	const auto _vertices = std::vector({
+		VertexData{glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
+		VertexData{glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+		VertexData{glm::vec3(1.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
+		VertexData{glm::vec3(1.0f, -1.0f, 0.0f), glm::vec2(1.0f, 0.0f)}
+	});
+
 	for (auto i = 0; i < _vertices.size(); i++)
 	{
 		vertices.push_back(_vertices.begin()[i].position.x);
@@ -38,7 +42,7 @@ Shape::Shape(const std::initializer_list<VertexData>& _vertices,
 	glBindVertexArray(0);
 }
 
-void Shape::Draw() const
+void Frame::Draw() const
 {
 	material->Use();
 	glBindVertexArray(VAO);
@@ -46,7 +50,7 @@ void Shape::Draw() const
 	glBindVertexArray(0);
 }
 
-Shape::~Shape()
+Frame::~Frame()
 {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
