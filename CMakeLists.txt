@@ -32,13 +32,39 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glm)
 
+add_custom_target(COPY_RESOURCES ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/res ${CMAKE_CURRENT_BINARY_DIR}/res
+        COMMENT "Copying res folder to build directory"
+)
+
 add_executable(${PROJECT_NAME} src/main.cpp
         src/Graphics/Window.cpp
         src/Graphics/Window.hpp
+        src/Graphics/Primitives/Frame.cpp
+        src/Graphics/Primitives/Frame.hpp
+        src/Graphics/Material.cpp
+        src/Graphics/Material.hpp
         src/Graphics/Shader.cpp
         src/Graphics/Shader.hpp
+        src/Graphics/Texture.cpp
+        src/Graphics/Texture.hpp
+        src/Graphics/TimeQuery.hpp
+        src/Input/Input.cpp
+        src/Input/Input.hpp
+        src/Graphics/Ssbo.hpp
+        src/Graphics/ObjectBinder.hpp
+        src/Camera/Camera.cpp
+        src/Camera/Camera.hpp
+        src/Voxel/Block.cpp
+        src/Voxel/Block.hpp
+        src/Voxel/Chunk.cpp
+        src/Voxel/Chunk.hpp
+        src/Random/Random.cpp
+        src/Random/Random.hpp
 )
+
+add_dependencies(${PROJECT_NAME} COPY_RESOURCES)
 
 target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL glad glm)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${glad_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${glad_SOURCE_DIR}/include PRIVATE ${PROJECT_SOURCE_DIR}/src)

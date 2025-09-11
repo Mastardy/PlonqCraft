@@ -11,7 +11,10 @@ Window::Window(const int width, const int height)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(640, 480, "Hello Worlders!", nullptr, nullptr);
+	this->width = width;
+	this->height = height;
+
+	window = glfwCreateWindow(width, height, "Hello Worlders!", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		glfwTerminate();
@@ -27,7 +30,15 @@ Window::Window(const int width, const int height)
 
 	glViewport(0, 0, width, height);
 
+	glEnable(GL_DEPTH_TEST);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+	glfwSwapInterval(0);
+
+	texture = std::make_shared<Texture>(width, height);
+	auto shader = std::make_shared<Shader>("res/shaders/base/base.vert", "res/shaders/base/base.frag");
+	auto mat = std::make_shared<Material>(shader, texture);
+	frame = std::make_unique<Frame>(mat);
 }
 
 Window::~Window()
@@ -40,7 +51,7 @@ bool Window::ShouldClose() const
 	return glfwWindowShouldClose(window);
 }
 
-void Window::ShouldClose(bool) const
+void Window::Close() const
 {
 	glfwSetWindowShouldClose(window, true);
 }
@@ -48,7 +59,9 @@ void Window::ShouldClose(bool) const
 void Window::Render() const
 {
 	glClearColor(0.1f, 0.1f, 0.125f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	frame->Draw();
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
@@ -57,6 +70,11 @@ void Window::Render() const
 int Window::GetKey(const int key) const
 {
 	return glfwGetKey(window, key);
+}
+
+void Window::SetTitle(const std::string& title) const
+{
+	glfwSetWindowTitle(window, title.c_str());
 }
 
 
