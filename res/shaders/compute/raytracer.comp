@@ -13,17 +13,29 @@ uniform int chunkLength;
 uniform int chunkHeight;
 uniform float randSeed;
 
-struct Block {
+uniform vec3 sunLights;
+
+const float EPS = 1e-4;
+
+struct Block
+{
     int id;
 };
 
-layout (std430, binding = 0) buffer Chunk {
+layout (std430, binding = 0) buffer Chunk
+{
     Block chunk[];
 };
 
 struct Ray {
     vec3 origin;
     vec3 direction;
+};
+
+struct RayCastHitInfo {
+    int surfaceType;
+    vec3 surfaceNormal;
+    vec3 surfaceHit;
 };
 
 bool IsValidVoxel(ivec3 p) {
@@ -38,93 +50,11 @@ int GetBlock(ivec3 p)
     return chunk[p.x + p.z * chunkWidth + p.y * (chunkWidth * chunkLength)].id;
 }
 
-vec4 Raycast(Ray ray)
-{
-    ivec3 voxel = ivec3(floor(ray.origin));
+float IntersectAABB(Ray ray, vec3 min, vec3 max);
 
-    if (!IsValidVoxel(voxel)) {
-        vec3 chunkMin = vec3(0.0);
-        vec3 chunkMax = vec3(chunkWidth, chunkHeight, chunkLength);
+bool RayCast(Ray ray, out RayCastHitInfo hitInfo);
 
-        vec3 tMin = (chunkMin - ray.origin) / ray.direction;
-        vec3 tMax = (chunkMax - ray.origin) / ray.direction;
-
-        vec3 tMinActual = min(tMin, tMax);
-        vec3 tMaxActual = max(tMin, tMax);
-
-        float tEnter = max(max(tMinActual.x, tMinActual.y), tMinActual.z);
-        float tExit = min(min(tMaxActual.x, tMaxActual.y), tMaxActual.z);
-
-        if (tExit < 0.0 || tEnter > tExit) {
-            return vec4(0.6, 0.8, 1.0, 1.0);
-        }
-
-        float t = max(tEnter, 0.0) + 0.001;
-        vec3 entryPoint = ray.origin + ray.direction * t;
-        voxel = ivec3(floor(entryPoint));
-
-        if (!IsValidVoxel(voxel)) {
-            return vec4(0.6, 0.8, 1.0, 1.0);
-        }
-    }
-
-    ivec3 stepDir = ivec3(sign(ray.direction));
-
-    vec3 voxelMin = vec3(voxel);
-    vec3 voxelMax = voxelMin + vec3(1.0);
-
-    vec3 tMax;
-    for (int i = 0; i < 3; i++)
-    {
-        if (abs(ray.direction[i]) > 1e-6)
-        {
-            float boundary = (stepDir[i] > 0) ? voxelMax[i] : voxelMin[i];
-            tMax[i] = (boundary - ray.origin[i]) / ray.direction[i];
-        }
-        else
-        {
-            tMax[i] = 1e30;
-        }
-    }
-
-    vec3 tDelta;
-    for (int i = 0; i < 3; i++) {
-        if (abs(ray.direction[i]) > 1e-6) {
-            tDelta[i] = abs(1.0 / ray.direction[i]);
-        } else {
-            tDelta[i] = 1e30;
-        }
-    }
-
-    const int MAX_STEPS = 512;
-    for (int i = 0; i < MAX_STEPS; i++) {
-
-        int blockId = GetBlock(voxel);
-        if (blockId != 0)
-        {
-            return vec4(vec3(distance(voxel, ray.origin) / 24), 1);
-            return blockId == 1 ? vec4(0.5f, 0.5f, 0.5f, 1.0) : vec4(0.2f, 0.8f, 0.1f, 1.0);
-        }
-
-        if (tMax.x < tMax.y && tMax.x < tMax.z)
-        {
-            voxel.x += stepDir.x;
-            tMax.x += tDelta.x;
-        }
-        else if (tMax.y < tMax.z)
-        {
-            voxel.y += stepDir.y;
-            tMax.y += tDelta.y;
-        }
-        else
-        {
-            voxel.z += stepDir.z;
-            tMax.z += tDelta.z;
-        }
-    }
-
-    return vec4(0.6, 0.8, 1.0, 1.0);
-}
+vec3 RayColor(Ray ray);
 
 void main()
 {
@@ -154,7 +84,152 @@ void main()
     );
 
     Ray r = Ray(camCenter, rayDir);
-    vec4 value = Raycast(r);
+    vec3 value = RayColor(r);
 
-    imageStore(imgOutput, texelCoord, value);
+    imageStore(imgOutput, texelCoord, vec4(value, 1));
+}
+
+vec3 RayColor(Ray ray)
+{
+    vec3 sky = vec3(0.6, 0.8, 1.0);
+    RayCastHitInfo hitInfo;
+    if (!RayCast(ray, hitInfo)) return sky;
+    Ray ray2 = Ray(hitInfo.surfaceHit, -normalize(sunLights));
+    RayCastHitInfo hitInfo2;
+    if (dot(hitInfo.surfaceNormal, -normalize(sunLights)) < -EPS || RayCast(ray2, hitInfo2)) return vec3(0.1);
+    return (hitInfo.surfaceNormal + vec3(1)) / 2;
+}
+
+bool RayCast(Ray ray, out RayCastHitInfo hitInfo)
+{
+    float entryT = IntersectAABB(ray, vec3(0, 0, 0), vec3(16, 256, 16));
+    hitInfo = RayCastHitInfo(0, vec3(0), vec3(0));
+
+    if (entryT == 1e30f) return false;
+
+    vec3 entryPos = ray.origin + ray.direction * (entryT + EPS);
+
+    ivec3 stepDir = ivec3(sign(ray.direction));
+    vec3 tDelta = 1 / abs(ray.direction);
+
+    ivec3 pos = ivec3(floor(entryPos));
+    vec3 tMax = (vec3(pos) - entryPos + max(stepDir, 0)) / ray.direction;
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (abs(ray.direction[i]) < 1e-8)
+        {
+            tMax[i] = 1e30;
+            tDelta[i] = 1e30;
+        }
+    }
+
+    int axis = 0;
+
+    const int MAX_STEPS = 256;
+    int steps = 0;
+    for (int i = 0; i < MAX_STEPS; i++, steps++)
+    {
+        int blockType = GetBlock(pos);
+        if (blockType != 0 && pos != ivec3(floor(ray.origin)))
+        {
+            hitInfo.surfaceType = blockType;
+
+            if (steps == 0)
+            {
+                hitInfo.surfaceHit = ray.origin + ray.direction * entryT;
+
+                vec3 voxel = floor(ray.origin + ray.direction * (entryT + EPS)) + vec3(0.5);
+                vec3 toCenter = abs(normalize(hitInfo.surfaceHit - voxel));
+
+                axis = 0;
+                float axisValue = toCenter.x;
+                for (int j = 1; j < 3; j++)
+                {
+                    if (toCenter[j] > axisValue)
+                    {
+                        axisValue = toCenter[j];
+                        axis = j;
+                    }
+                }
+
+                switch (axis)
+                {
+                    case 0:
+                        hitInfo.surfaceNormal = vec3(-stepDir.x, 0, 0);
+                        break;
+                    case 1:
+                        hitInfo.surfaceNormal = vec3(0, -stepDir.y, 0);
+                        break;
+                    case 2:
+                        hitInfo.surfaceNormal = vec3(0, 0, -stepDir.z);
+                        break;
+                }
+            }
+            else
+            {
+                switch (axis)
+                {
+                    case 0:
+                        hitInfo.surfaceNormal = vec3(-stepDir.x, 0, 0);
+                        break;
+                    case 1:
+                        hitInfo.surfaceNormal = vec3(0, -stepDir.y, 0);
+                        break;
+                    case 2:
+                        hitInfo.surfaceNormal = vec3(0, 0, -stepDir.z);
+                        break;
+                }
+                hitInfo.surfaceHit = ray.origin + ray.direction * (entryT + tMax[axis] - tDelta[axis]);
+            }
+
+            return true;
+        }
+
+        if (tMax.x <= tMax.y && tMax.x <= tMax.z)
+        {
+            pos.x += stepDir.x;
+            axis = 0;
+            tMax.x += tDelta.x;
+        }
+        else if (tMax.y <= tMax.z)
+        {
+            pos.y += stepDir.y;
+            axis = 1;
+            tMax.y += tDelta.y;
+        }
+        else
+        {
+            if (stepDir.z < 1e-8)
+            {
+                if (i == MAX_STEPS - 1)
+                break;
+            }
+            pos.z += stepDir.z;
+            axis = 2;
+            tMax.z += tDelta.z;
+        }
+
+        if (!IsValidVoxel(pos)) break;
+    }
+
+    return false;
+}
+
+float IntersectAABB(Ray ray, vec3 bbMin, vec3 bbMax)
+{
+    float tMin = 0.0;
+    float tMax = 1e30f;
+
+    vec3 t1 = (bbMin - ray.origin) / ray.direction;
+    vec3 t2 = (bbMax - ray.origin) / ray.direction;
+
+    vec3 dMin = min(t1, t2);
+    vec3 dMax = max(t1, t2);
+
+    tMin = max(max(max(dMin.x, dMin.y), dMin.z), tMin);
+    tMax = min(min(min(dMax.x, dMax.y), dMax.z), tMax);
+
+    if (tMax >= tMin) return tMin;
+    return 1e30f;
 }

@@ -2,6 +2,8 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 
+#include <print>
+
 #include "glm/gtx/quaternion.hpp"
 
 Camera::Camera(const glm::vec3& position, const float pitch, const float yaw)
@@ -34,6 +36,7 @@ void Camera::SetRotation(const float pitch, const float yaw)
 	front.y = sin(glm::radians(this->pitch));
 	front.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
 	forward = glm::normalize(front);
+	up = glm::normalize(up);
 	right = -glm::normalize(glm::cross(forward, up));
 }
 
@@ -50,5 +53,6 @@ void Camera::Rotate(const float pitchOffset, const float yawOffset)
 	front.y = sin(glm::radians(this->pitch));
 	front.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
 	forward = glm::normalize(front);
+	up = glm::normalize(up);
 	right = -glm::normalize(glm::cross(forward, up));
 }
