@@ -63,8 +63,10 @@ void main()
 
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
 
+    float aspect = float(texWidth) / float(texHeight);
+
     vec2 pixelCenter = vec2(
-    (texelCoord.x - halfTexWidth) / float(halfTexWidth),
+    (texelCoord.x - halfTexWidth) / float(halfTexWidth) * aspect,
     (texelCoord.y - halfTexHeight) / float(halfTexHeight)
     );
 

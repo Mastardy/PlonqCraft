@@ -67,4 +67,7 @@ add_dependencies(${PROJECT_NAME} COPY_RESOURCES)
 
 target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL glad glm)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${glad_SOURCE_DIR}/include PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(${PROJECT_NAME}
+        PRIVATE ${glad_SOURCE_DIR}/include
+        PRIVATE ${PROJECT_SOURCE_DIR}/src
+)

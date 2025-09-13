@@ -15,13 +15,14 @@
 #include "Voxel/Block.hpp"
 #include "Voxel/Chunk.hpp"
 
+
 void ProcessInput(const Window& window, Camera& camera, float deltaTime);
 
 void WorkChunk(Chunk& chunk, const int x, const int y, const int z)
 {
 	// chunk.SetBlock(x, y, z, Block(BlockType::Stone));
-	const bool chess = (x + y % 2 + z % 2) % 2 == 0;
-	chunk.SetBlock(x, y, z, Block(!chess ? BlockType::Air : BlockType::Stone));
+
+	chunk.SetBlock(x, y, z, Block(y >= 20 ? BlockType::Air : BlockType::Stone));
 }
 
 #define CHUNK_WIDTH 16
@@ -30,7 +31,7 @@ void WorkChunk(Chunk& chunk, const int x, const int y, const int z)
 
 int main()
 {
-	Window window(640, 640);
+	Window window(1192, 672);
 	Camera camera(glm::vec3(0, 0, 0), 0, 0);
 
 	Input(window.GetGLFWWindow());
